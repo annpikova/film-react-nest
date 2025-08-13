@@ -1,23 +1,39 @@
 import { Module } from '@nestjs/common';
-import {ServeStaticModule} from "@nestjs/serve-static";
-import {ConfigModule} from "@nestjs/config";
-import * as path from "node:path";
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { MongooseModule } from '@nestjs/mongoose';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
-import {configProvider} from "./app.config.provider";
 import { FilmsModule } from './films/films.module';
-import { OrderModule } from './order/order.module';
+import { OrdersModule } from './order/order.module';
 
 @Module({
   imports: [
-	ConfigModule.forRoot({
-          isGlobal: true,
-          cache: true
+    ConfigModule.forRoot({ isGlobal: true, envFilePath: ['.env', '.env.local'] }),
+
+    MongooseModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (cfg: ConfigService) => ({
+        uri: cfg.get<string>('MONGODB_URI') ?? 'mongodb://localhost:27017/film',
       }),
-	FilmsModule,
-	OrderModule,
-      // @todo: Добавьте раздачу статических файлов из public
+    }),
+
+    // Статика: /content/afisha/* и /images/*
+    ServeStaticModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (cfg: ConfigService) => {
+        const cwd = process.cwd();
+        const publicDir = cfg.get('STATIC_DIR') ?? 'public';
+        const imagesDir = cfg.get('IMAGES_DIR') ?? 'public/images';
+        return [
+          { rootPath: join(cwd, publicDir), serveRoot: '/content/afisha' },
+          { rootPath: join(cwd, imagesDir), serveRoot: '/images' },
+        ];
+      },
+    }),
+
+    FilmsModule,
+    OrdersModule,
   ],
-  controllers: [],
-  providers: [configProvider],
 })
 export class AppModule {}
