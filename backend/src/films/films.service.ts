@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Film, FilmDocument } from './schemas/film.schema';
+import { Film, FilmDocument, Screening } from './schemas/film.schema';
 import { Model, Types } from 'mongoose';
 import { FilmsRepository } from './films.repository';
 
@@ -13,7 +13,7 @@ export class FilmsService {
 
   async listForCollection() {
     const docs = await this.filmsRepository.findAll();
-    return docs.map((d: any) => ({
+    return docs.map((d: Film & { _id: Types.ObjectId }) => ({
       id: d._id.toString(),
       rating: d.rating ? Number(d.rating) : null,
       director: d.director ?? '',
@@ -29,18 +29,21 @@ export class FilmsService {
   async scheduleForCollection(id: string) {
     if (!Types.ObjectId.isValid(id))
       throw new NotFoundException('Film not found');
-    const doc: any = await this.filmsRepository.findById(id);
+    const doc: (Film & { _id: Types.ObjectId }) | null =
+      await this.filmsRepository.findById(id);
     if (!doc) throw new NotFoundException('Film not found');
 
-    const items = (doc.schedule ?? []).map((s: any) => ({
-      id: s.id || s._id?.toString(),
-      daytime: new Date(s.daytime).toISOString(),
-      hall: Number(s.hall),
-      rows: Number(s.rows),
-      seats: Number(s.seats),
-      price: Number(s.price),
-      taken: s.taken ?? [],
-    }));
+    const items = (doc.schedule ?? []).map(
+      (s: Screening & { _id?: Types.ObjectId }) => ({
+        id: s._id?.toString() || '',
+        daytime: new Date(s.daytime).toISOString(),
+        hall: Number(s.hall),
+        rows: Number(s.rows),
+        seats: Number(s.seats),
+        price: Number(s.price),
+        taken: s.taken ?? [],
+      }),
+    );
     return { total: items.length, items };
   }
 
@@ -76,13 +79,14 @@ export class FilmsService {
       throw new NotFoundException('Film or session not found');
     }
 
-    const doc: any = await this.FilmModel.findOne(
-      {
-        _id: new Types.ObjectId(filmId),
-        'schedule._id': new Types.ObjectId(sessionId),
-      },
-      { 'schedule.$': 1 },
-    ).lean();
+    const doc: (Film & { _id: Types.ObjectId }) | null =
+      await this.FilmModel.findOne(
+        {
+          _id: new Types.ObjectId(filmId),
+          'schedule._id': new Types.ObjectId(sessionId),
+        },
+        { 'schedule.$': 1 },
+      ).lean();
 
     if (!doc || !doc.schedule || doc.schedule.length === 0) {
       throw new NotFoundException('Session not found');
