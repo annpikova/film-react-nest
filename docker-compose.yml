@@ -1,0 +1,49 @@
+version: "3.9"
+
+services:
+  mongo:
+    image: mongo:6
+    container_name: film-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: film-backend
+    depends_on:
+      - mongo
+    environment:
+      # backend читает эти переменные
+      MONGODB_URI: mongodb://mongo:27017/film
+      PORT: 3000
+      STATIC_DIR: public
+      IMAGES_DIR: public/images
+      NODE_ENV: production
+    ports:
+      - "3000:3000"
+
+  # Одноразовый контейнер для импорта фильмов
+  seed:
+    image: mongo:6
+    container_name: film-seed
+    depends_on:
+      - mongo
+    volumes:
+      # укажи путь к своему JSON со списком фильмов
+      - ./backend/test/mongodb_initial_stub.json:/seed/films.json:ro
+    entrypoint: [ "mongoimport",
+      "--uri=mongodb://mongo:27017/film",
+      "--collection=films",
+      "--file=/seed/films.json",
+      "--jsonArray",
+      "--mode=upsert",
+      "--upsertFields=_id,title" # подстрой при необходимости
+    ]
+
+volumes:
+  mongo_data:
