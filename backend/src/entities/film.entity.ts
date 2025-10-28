@@ -18,7 +18,7 @@ export class Film {
   @Column({ type: 'varchar', length: 255 })
   director: string;
 
-  @Column({ type: 'decimal', precision: 3, scale: 1 })
+  @Column({ type: 'float' })
   rating: number;
 
   @Column({ type: 'varchar', length: 255 })

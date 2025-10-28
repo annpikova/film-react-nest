@@ -9,8 +9,11 @@ export class OrderController {
   @Post('order')
   async createOrder(
     @Body() createOrderDto: CreateOrderDto,
-  ): Promise<{ items: OrderResponseDto[] }> {
+  ): Promise<{ total: number; items: OrderResponseDto[] }> {
     const results = await this.orderService.createOrder(createOrderDto);
-    return { items: results };
+    return {
+      total: results.length,
+      items: results,
+    };
   }
 }

@@ -1,6 +1,6 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { AppRepository } from '../../repositories/app.repository';
-import { CreateOrderDto, OrderResponseDto, TicketDto } from '../dto/order.dto';
+import { CreateOrderDto, OrderResponseDto } from '../dto/order.dto';
 
 @Injectable()
 export class OrderService {
@@ -11,65 +11,62 @@ export class OrderService {
   ): Promise<OrderResponseDto[]> {
     const { email, phone, tickets } = createOrderDto;
 
-    // В будущем здесь можно добавить логику сохранения контактных данных
+    // сюда можно будет прикрутить сохранение контактов
     console.log(`Order for ${email}, phone: ${phone}`);
 
-    // Группируем билеты по сеансам
-    const ticketsBySession = new Map<string, TicketDto[]>();
-    for (const ticket of tickets) {
-      if (!ticketsBySession.has(ticket.session)) {
-        ticketsBySession.set(ticket.session, []);
-      }
-      ticketsBySession.get(ticket.session)!.push(ticket);
-    }
-
     const results: OrderResponseDto[] = [];
+    // Копим обновления по занятым местам для каждого сеанса
+    const updates = new Map<string, string[]>();
 
-    // Обрабатываем каждый сеанс
-    for (const [sessionId, sessionTickets] of ticketsBySession) {
-      // Проверяем существование сеанса
-      const schedule = await this.appRepository.schedules.findById(sessionId);
+    for (const ticket of tickets) {
+      // находим сеанс
+      const schedule = await this.appRepository.schedules.findById(
+        ticket.session,
+      );
+
       if (!schedule) {
-        throw new BadRequestException(`Schedule ${sessionId} not found`);
+        throw new BadRequestException(`Session ${ticket.session} not found`);
       }
 
-      // Проверяем доступность мест
-      const takenSeats = schedule.taken
-        ? schedule.taken.split(',').filter((seat: string) => seat.trim() !== '')
+      // текущее состояние занятых сидений
+      const initialTaken = schedule.taken
+        ? schedule.taken.split(',').filter((p) => p.trim() !== '')
         : [];
 
-      const seatsToBook = sessionTickets.map(
-        (ticket) => `${ticket.row}:${ticket.seat}`,
-      );
-      const conflictingSeats = seatsToBook.filter((seat) =>
-        takenSeats.includes(seat),
-      );
+      const seatKey = `${ticket.row}-${ticket.seat}`;
 
-      if (conflictingSeats.length > 0) {
+      // берём "рабочую" копию для этого сеанса
+      let takenForSchedule = updates.get(schedule.id);
+      if (!takenForSchedule) {
+        takenForSchedule = [...initialTaken];
+        updates.set(schedule.id, takenForSchedule);
+      }
+
+      // проверяем, не занято ли место уже (в том числе внутри этого же заказа)
+      if (takenForSchedule.includes(seatKey)) {
         throw new BadRequestException(
-          `Seats ${conflictingSeats.join(', ')} are already taken`,
+          `Seat ${seatKey} is already taken for session ${ticket.session}`,
         );
       }
 
-      // Обновляем занятые места
-      const updatedTakenSeats = [...takenSeats, ...seatsToBook];
-      await this.appRepository.schedules.updateTakenSeats(
-        sessionId,
-        updatedTakenSeats,
-      );
+      // помечаем как занято
+      takenForSchedule.push(seatKey);
 
-      // Добавляем результаты для каждого билета
-      for (const ticket of sessionTickets) {
-        results.push({
-          id: `order_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-          film: ticket.film,
-          session: ticket.session,
-          row: ticket.row,
-          seat: ticket.seat,
-          price: ticket.price,
-          daytime: schedule.daytime,
-        });
-      }
+      // формируем билет
+      results.push({
+        id: `order_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        film: ticket.film,
+        session: ticket.session,
+        row: ticket.row,
+        seat: ticket.seat,
+        price: ticket.price,
+        daytime: schedule.daytime,
+      });
+    }
+
+    // фиксируем обновлённые занятые места
+    for (const [scheduleId, takenArr] of updates.entries()) {
+      await this.appRepository.schedules.updateTakenSeats(scheduleId, takenArr);
     }
 
     return results;

@@ -7,23 +7,37 @@ import { Film, Schedule } from '../../entities';
 export class FilmsService {
   constructor(private readonly appRepository: AppRepository) {}
 
+  // GET /api/afisha/films/
   async findAll(): Promise<{ total: number; items: FilmResponseDto[] }> {
     const films = await this.appRepository.films.findAll();
     const filmDtos = films.map((film) => this.mapFilmToDto(film));
+
     return {
       total: filmDtos.length,
       items: filmDtos,
     };
   }
 
-  async findByIdWithSchedules(id: string): Promise<FilmResponseDto | null> {
+  // GET /api/afisha/films/:id/schedule/
+  // Возвращает массив сеансов конкретного фильма
+  async findByIdWithSchedules(
+    id: string,
+  ): Promise<{ schedule: ScheduleResponseDto[] } | null> {
     const film = await this.appRepository.films.findByIdWithSchedules(id);
     if (!film) {
       return null;
     }
-    return this.mapFilmToDto(film);
+
+    const scheduleDtos = (film.schedules || []).map((s) =>
+      this.mapScheduleToDto(s),
+    );
+
+    return {
+      schedule: scheduleDtos,
+    };
   }
 
+  // Маппим фильм -> DTO
   private mapFilmToDto(film: Film): FilmResponseDto {
     return {
       id: film.id,
@@ -31,28 +45,30 @@ export class FilmsService {
       about: film.about,
       description: film.description,
       director: film.director,
-      rating: parseFloat(film.rating.toString()),
+      rating: film.rating,
       image: film.image,
       cover: film.cover,
       tags: film.tags,
-      schedule: film.schedules?.map((schedule: Schedule) =>
-        this.mapScheduleToDto(schedule),
-      ),
+      schedule: (film.schedules || []).map((s) => this.mapScheduleToDto(s)),
     };
   }
 
+  // Маппим сеанс -> DTO
   private mapScheduleToDto(schedule: Schedule): ScheduleResponseDto {
     return {
       id: schedule.id,
-      daytime: schedule.daytime.toISOString(),
+      daytime:
+        schedule.daytime instanceof Date
+          ? schedule.daytime.toISOString()
+          : new Date(schedule.daytime).toISOString(),
       hall: schedule.hall,
       rows: schedule.rows,
       seats: schedule.seats,
       price: schedule.price,
       taken: schedule.taken
-        ? schedule.taken.split(',').filter((seat: string) => seat.trim() !== '')
+        ? schedule.taken.split(',').filter((seat) => seat.trim() !== '')
         : [],
-      film: schedule.filmId, // Добавляем filmId как film
+      film: schedule.filmId,
     };
   }
 }

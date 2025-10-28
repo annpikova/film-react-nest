@@ -16,9 +16,11 @@ export class FilmsController {
     @Param('id') id: string,
   ): Promise<{ total: number; items: ScheduleResponseDto[] }> {
     const film = await this.filmsService.findByIdWithSchedules(id);
+
     if (!film) {
       throw new NotFoundException('Film not found');
     }
+
     return {
       total: film.schedule?.length || 0,
       items: film.schedule || [],
