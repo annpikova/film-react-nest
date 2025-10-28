@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { AppRepository } from '../../repositories/app.repository';
 import { FilmResponseDto, ScheduleResponseDto } from '../dto/films.dto';
+import { Film, Schedule } from '../../entities';
 
 @Injectable()
 export class FilmsService {
@@ -11,7 +12,7 @@ export class FilmsService {
     const filmDtos = films.map((film) => this.mapFilmToDto(film));
     return {
       total: filmDtos.length,
-      items: filmDtos
+      items: filmDtos,
     };
   }
 
@@ -23,24 +24,24 @@ export class FilmsService {
     return this.mapFilmToDto(film);
   }
 
-  private mapFilmToDto(film: any): FilmResponseDto {
+  private mapFilmToDto(film: Film): FilmResponseDto {
     return {
       id: film.id,
       title: film.title,
       about: film.about,
       description: film.description,
       director: film.director,
-      rating: parseFloat(film.rating),
+      rating: parseFloat(film.rating.toString()),
       image: film.image,
       cover: film.cover,
       tags: film.tags,
-      schedule: film.schedules?.map((schedule: any) =>
+      schedule: film.schedules?.map((schedule: Schedule) =>
         this.mapScheduleToDto(schedule),
       ),
     };
   }
 
-  private mapScheduleToDto(schedule: any): ScheduleResponseDto {
+  private mapScheduleToDto(schedule: Schedule): ScheduleResponseDto {
     return {
       id: schedule.id,
       daytime: schedule.daytime.toISOString(),

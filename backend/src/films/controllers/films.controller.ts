@@ -21,7 +21,7 @@ export class FilmsController {
     }
     return {
       total: film.schedule?.length || 0,
-      items: film.schedule || []
+      items: film.schedule || [],
     };
   }
 }

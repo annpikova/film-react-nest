@@ -46,6 +46,9 @@ export function useAppState() {
         }).then(() => {
             dispatch({ type: 'clearBasket' });
             dispatch({ type: 'openModal', payload: 'success' });
+        }).catch((error) => {
+            console.error('Order failed:', error);
+            dispatch({ type: 'setError', payload: 'Ошибка при оформлении заказа. Попробуйте еще раз.' });
         });
     };
 

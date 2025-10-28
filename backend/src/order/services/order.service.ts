@@ -1,52 +1,77 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { AppRepository } from '../../repositories/app.repository';
-import { CreateOrderDto, OrderResponseDto } from '../dto/order.dto';
+import { CreateOrderDto, OrderResponseDto, TicketDto } from '../dto/order.dto';
 
 @Injectable()
 export class OrderService {
   constructor(private readonly appRepository: AppRepository) {}
 
-  async createOrder(createOrderDto: CreateOrderDto): Promise<OrderResponseDto> {
-    const { filmId, scheduleId, seats } = createOrderDto;
+  async createOrder(
+    createOrderDto: CreateOrderDto,
+  ): Promise<OrderResponseDto[]> {
+    const { email, phone, tickets } = createOrderDto;
 
-    // Проверяем существование сеанса
-    const schedule = await this.appRepository.schedules.findById(scheduleId);
-    if (!schedule) {
-      throw new BadRequestException('Schedule not found');
+    // В будущем здесь можно добавить логику сохранения контактных данных
+    console.log(`Order for ${email}, phone: ${phone}`);
+
+    // Группируем билеты по сеансам
+    const ticketsBySession = new Map<string, TicketDto[]>();
+    for (const ticket of tickets) {
+      if (!ticketsBySession.has(ticket.session)) {
+        ticketsBySession.set(ticket.session, []);
+      }
+      ticketsBySession.get(ticket.session)!.push(ticket);
     }
 
-    // Проверяем, что сеанс принадлежит указанному фильму
-    if (schedule.filmId !== filmId) {
-      throw new BadRequestException(
-        'Schedule does not belong to the specified film',
+    const results: OrderResponseDto[] = [];
+
+    // Обрабатываем каждый сеанс
+    for (const [sessionId, sessionTickets] of ticketsBySession) {
+      // Проверяем существование сеанса
+      const schedule = await this.appRepository.schedules.findById(sessionId);
+      if (!schedule) {
+        throw new BadRequestException(`Schedule ${sessionId} not found`);
+      }
+
+      // Проверяем доступность мест
+      const takenSeats = schedule.taken
+        ? schedule.taken.split(',').filter((seat: string) => seat.trim() !== '')
+        : [];
+
+      const seatsToBook = sessionTickets.map(
+        (ticket) => `${ticket.row}:${ticket.seat}`,
       );
-    }
-
-    // Проверяем доступность мест
-    const takenSeats = schedule.taken
-      ? schedule.taken.split(',').filter((seat: string) => seat.trim() !== '')
-      : [];
-    const conflictingSeats = seats.filter((seat) => takenSeats.includes(seat));
-    if (conflictingSeats.length > 0) {
-      throw new BadRequestException(
-        `Seats ${conflictingSeats.join(', ')} are already taken`,
+      const conflictingSeats = seatsToBook.filter((seat) =>
+        takenSeats.includes(seat),
       );
+
+      if (conflictingSeats.length > 0) {
+        throw new BadRequestException(
+          `Seats ${conflictingSeats.join(', ')} are already taken`,
+        );
+      }
+
+      // Обновляем занятые места
+      const updatedTakenSeats = [...takenSeats, ...seatsToBook];
+      await this.appRepository.schedules.updateTakenSeats(
+        sessionId,
+        updatedTakenSeats,
+      );
+
+      // Добавляем результаты для каждого билета
+      for (const ticket of sessionTickets) {
+        results.push({
+          id: `order_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          film: ticket.film,
+          session: ticket.session,
+          row: ticket.row,
+          seat: ticket.seat,
+          price: ticket.price,
+          daytime: schedule.daytime,
+        });
+      }
     }
 
-    // Обновляем занятые места
-    const updatedTakenSeats = [...takenSeats, ...seats];
-    await this.appRepository.schedules.updateTakenSeats(
-      scheduleId,
-      updatedTakenSeats,
-    );
-
-    // Возвращаем информацию о заказе
-    return {
-      id: `order_${Date.now()}`, // В реальном приложении это должен быть UUID
-      filmId,
-      scheduleId,
-      seats,
-      createdAt: new Date(),
-    };
+    return results;
   }
 }

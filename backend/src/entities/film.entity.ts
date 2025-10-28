@@ -33,4 +33,3 @@ export class Film {
   @OneToMany(() => Schedule, (schedule) => schedule.film)
   schedules: Schedule[];
 }
-

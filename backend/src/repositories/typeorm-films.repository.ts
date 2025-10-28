@@ -31,4 +31,3 @@ export class TypeOrmFilmsRepository implements FilmsRepository {
     });
   }
 }
-

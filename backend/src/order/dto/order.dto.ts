@@ -1,13 +1,23 @@
+export class TicketDto {
+  film: string;
+  session: string;
+  row: number;
+  seat: number;
+  price: number;
+}
+
 export class CreateOrderDto {
-  filmId: string;
-  scheduleId: string;
-  seats: string[];
+  email: string;
+  phone: string;
+  tickets: TicketDto[];
 }
 
 export class OrderResponseDto {
   id: string;
-  filmId: string;
-  scheduleId: string;
-  seats: string[];
-  createdAt: Date;
+  film: string;
+  session: string;
+  row: number;
+  seat: number;
+  price: number;
+  daytime: Date;
 }

@@ -24,4 +24,3 @@ export class AppRepository {
     return this.configService.get<string>('DATABASE_DRIVER', 'mongodb');
   }
 }
-

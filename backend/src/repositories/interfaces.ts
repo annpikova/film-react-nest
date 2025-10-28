@@ -11,4 +11,3 @@ export interface SchedulesRepository {
   findById(id: string): Promise<Schedule | null>;
   updateTakenSeats(id: string, takenSeats: string[]): Promise<void>;
 }
-
