@@ -101,12 +101,12 @@ describe('FilmsController', () => {
 
       mockFilmsService.findByIdWithSchedules.mockResolvedValue(null);
 
-      await expect(
-        controller.findByIdWithSchedules(filmId),
-      ).rejects.toThrow(NotFoundException);
-      await expect(
-        controller.findByIdWithSchedules(filmId),
-      ).rejects.toThrow('Film not found');
+      await expect(controller.findByIdWithSchedules(filmId)).rejects.toThrow(
+        NotFoundException,
+      );
+      await expect(controller.findByIdWithSchedules(filmId)).rejects.toThrow(
+        'Film not found',
+      );
     });
 
     it('should return empty array when film has no schedules', async () => {
@@ -125,4 +125,3 @@ describe('FilmsController', () => {
     });
   });
 });
-

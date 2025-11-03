@@ -65,4 +65,3 @@ describe('JsonLogger', () => {
     expect(parsed.message).toBe('Verbose message');
   });
 });
-

@@ -24,11 +24,11 @@ export class StaticController {
     // Если файл не указан (т.е. запросили просто /content/afisha/),
     // можно отдать любую "дефолтную" картинку, чтобы тоже был 200.
     if (!filename) {
-        filename = 'bg1s.jpg';
+      filename = 'bg1s.jpg';
     }
 
     const filePath = path.join(
-      process.cwd(),                // при запуске pnpm start:dev это будет backend/
+      process.cwd(), // при запуске pnpm start:dev это будет backend/
       'public',
       'content',
       'afisha',
