@@ -24,7 +24,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     bufferLogs: true,
   });
-  app.setGlobalPrefix('api/afisha');
+  // Не устанавливаем глобальный префикс, так как контроллеры уже имеют префикс 'api/afisha'
   app.enableCors();
   app.useLogger(getLogger());
   await app.listen(3000);
