@@ -1,0 +1,102 @@
+version: '3.8'
+
+services:
+  # PostgreSQL база данных
+  postgres:
+    image: postgres:16-alpine
+    container_name: film_postgres
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      POSTGRES_DB: ${POSTGRES_DB:-film_db}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - film_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # pgAdmin для управления базой данных (опционально, можно закрыть через firewall)
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: film_pgadmin
+    env_file:
+      - .env
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@admin.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin}
+    ports:
+      - "8080:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - film_network
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+  # Сборка фронтенда (только для создания volume)
+  frontend-builder:
+    image: ghcr.io/annpikova/film-frontend:latest
+    volumes:
+      - frontend_dist:/output
+    networks:
+      - film_network
+    restart: "no"
+
+  # Бэкенд
+  backend:
+    image: ghcr.io/annpikova/film-backend:latest
+    container_name: film_backend
+    env_file:
+      - .env
+    environment:
+      DATABASE_DRIVER: ${DATABASE_DRIVER:-postgres}
+      DATABASE_HOST: ${DATABASE_HOST:-postgres}
+      DATABASE_PORT: ${DATABASE_PORT:-5432}
+      DATABASE_USERNAME: ${DATABASE_USERNAME:-postgres}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD:-password}
+      DATABASE_NAME: ${DATABASE_NAME:-film_db}
+      DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:password@postgres:5432/film_db}
+      LOGGER_TYPE: ${LOGGER_TYPE:-tskv}
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./backend/public:/app/public
+    networks:
+      - film_network
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # Nginx
+  nginx:
+    image: ghcr.io/annpikova/film-nginx:latest
+    container_name: film_nginx
+    ports:
+      - "80:80"
+    volumes:
+      - frontend_dist:/usr/share/nginx/html:ro
+    networks:
+      - film_network
+    depends_on:
+      - backend
+      - frontend-builder
+    restart: unless-stopped
+
+networks:
+  film_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  pgadmin_data:
+  frontend_dist:
+
