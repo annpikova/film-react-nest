@@ -54,15 +54,20 @@ docker compose down
 ### Инициализация базы данных
 
 После запуска контейнеров подключитесь к pgAdmin (http://localhost:8080) с учетными данными:
-- Email: `admin@example.com`
-- Password: `admin`
+- Email: `admin@example.com` (или значение из переменной `PGADMIN_EMAIL` в `.env`)
+- Password: `admin` (или значение из переменной `PGADMIN_PASSWORD` в `.env`)
 
 Добавьте подключение к базе данных:
-- Host: `postgres`
-- Port: `5432`
-- Database: `film_db`
-- Username: `postgres`
-- Password: `password`
+- **Host:** `postgres` (название сервиса в docker-compose)
+- **Port:** `5432`
+- **Database:** `film_db` (или значение из переменной `POSTGRES_DB`/`DATABASE_NAME`)
+- **Username:** `postgres` (или значение из переменной `POSTGRES_USER`/`DATABASE_USERNAME`)
+- **Password:** `password` (или значение из переменной `POSTGRES_PASSWORD`/`DATABASE_PASSWORD`)
+
+**Важно:** Креденшалы для подключения к PostgreSQL должны совпадать с переменными в `.env`:
+- `POSTGRES_USER` = `DATABASE_USERNAME` (используется в pgAdmin как Username)
+- `POSTGRES_PASSWORD` = `DATABASE_PASSWORD` (используется в pgAdmin как Password)
+- `POSTGRES_DB` = `DATABASE_NAME` (используется в pgAdmin как Database)
 
 Выполните SQL скрипты из `backend/test/` в следующем порядке:
 1. `prac.init.sql` - создание таблиц

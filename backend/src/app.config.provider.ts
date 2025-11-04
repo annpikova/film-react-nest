@@ -3,17 +3,36 @@ import { ConfigModule } from '@nestjs/config';
 export const configProvider = {
   imports: [ConfigModule.forRoot()],
   provide: 'CONFIG',
-  useFactory: () => ({
-    database: {
-      driver: process.env.DATABASE_DRIVER || 'mongodb',
-      url: process.env.DATABASE_URL || 'mongodb://localhost:27017/film',
-      username: process.env.DATABASE_USERNAME || 'postgres',
-      password: process.env.DATABASE_PASSWORD || 'password',
-      host: process.env.DATABASE_HOST || 'localhost',
-      port: parseInt(process.env.DATABASE_PORT || '5432'),
-      name: process.env.DATABASE_NAME || 'film_db',
-    },
-  }),
+  useFactory: () => {
+    const driver = process.env.DATABASE_DRIVER || 'mongodb';
+    const username = process.env.DATABASE_USERNAME || 'postgres';
+    const password = process.env.DATABASE_PASSWORD || 'password';
+    const host = process.env.DATABASE_HOST || 'localhost';
+    const port = parseInt(process.env.DATABASE_PORT || '5432');
+    const name = process.env.DATABASE_NAME || 'film_db';
+
+    // Формируем DATABASE_URL из отдельных переменных, если он не указан явно
+    let url = process.env.DATABASE_URL;
+    if (!url) {
+      if (driver === 'postgres') {
+        url = `postgresql://${username}:${password}@${host}:${port}/${name}`;
+      } else {
+        url = `mongodb://${host}:${port}/${name}`;
+      }
+    }
+
+    return {
+      database: {
+        driver,
+        url,
+        username,
+        password,
+        host,
+        port,
+        name,
+      },
+    };
+  },
 };
 
 export interface AppConfig {
