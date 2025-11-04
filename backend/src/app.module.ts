@@ -1,19 +1,21 @@
 import { Module } from '@nestjs/common';
-import {ServeStaticModule} from "@nestjs/serve-static";
-import {ConfigModule} from "@nestjs/config";
-import * as path from "node:path";
+import { ConfigModule } from '@nestjs/config';
 
-import {configProvider} from "./app.config.provider";
+import { FilmsModule } from './films/films.module';
+import { OrderModule } from './order/order.module';
+import { StaticModule } from './static/static.module';
 
 @Module({
   imports: [
-	ConfigModule.forRoot({
-          isGlobal: true,
-          cache: true
-      }),
-      // @todo: Добавьте раздачу статических файлов из public
+    // Делаем ConfigService глобальным (AppRepository его ждёт)
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+
+    // Бизнес-модули
+    FilmsModule,
+    OrderModule,
+    StaticModule,
   ],
-  controllers: [],
-  providers: [configProvider],
 })
 export class AppModule {}

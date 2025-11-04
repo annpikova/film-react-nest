@@ -24,7 +24,8 @@ export type Actions =
     | { type: 'setContacts', payload: Contacts }
     | { type: 'openModal', payload: Modals }
     | { type: 'closeModal' }
-    | { type: 'clearBasket' };
+    | { type: 'clearBasket' }
+    | { type: 'setError', payload: string };
 
 export const initialState: AppState = {
     films: [],
@@ -152,6 +153,12 @@ export function appReducer(state: AppState, action: Actions): AppState {
                 ...state,
                 selectedSession: null,
                 basket: []
+            };
+        case 'setError':
+            return {
+                ...state,
+                message: action.payload,
+                isError: true
             };
     }
     return state;
