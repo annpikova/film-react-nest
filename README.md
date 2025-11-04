@@ -54,7 +54,7 @@ docker compose down
 ### Инициализация базы данных
 
 После запуска контейнеров подключитесь к pgAdmin (http://localhost:8080) с учетными данными:
-- Email: `admin@admin.com`
+- Email: `admin@example.com`
 - Password: `admin`
 
 Добавьте подключение к базе данных:
@@ -99,7 +99,7 @@ npm run test:cov
 
 ### GitHub Actions
 
-При push в ветки `main`, `master` или `review-4` автоматически запускается сборка и публикация Docker образов в GitHub Container Registry (ghcr.io).
+При push в ветки `main`, `master` или `review-5` автоматически запускается сборка и публикация Docker образов в GitHub Container Registry (ghcr.io).
 
 Образы:
 - `ghcr.io/annpikova/film-frontend:latest`
@@ -161,7 +161,7 @@ docker compose -f docker-compose.prod.yml up -d
 
 - [Задеплоенное приложение](http://84.201.139.161)
 - [API документация](http://84.201.139.161/api/afisha/films)
-- pgAdmin: http://84.201.139.161:8080 (после деплоя)
+- pgAdmin: http://84.201.139.161:8080
 
 
 
