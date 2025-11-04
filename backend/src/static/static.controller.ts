@@ -14,7 +14,7 @@ export class StaticController {
     // Примеры:
     //  /content/afisha/              -> req.params[0] === '' или '/'
     //  /content/afisha//bg1s.jpg     -> req.params[0] === '/bg1s.jpg'
-    const wildcard = (req.params as any)[0] ?? '';
+    const wildcard = (req.params as Record<string, string>)[0] ?? '';
 
     // убираем ведущие слэши, чтобы получить чистое имя файла
     // ''            -> ''         (значит просто /content/afisha/)

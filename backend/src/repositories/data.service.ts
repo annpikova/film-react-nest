@@ -41,7 +41,7 @@ export class DataService {
         price: 350,
         taken: '',
         filmId: '0e33c7f6-27a7-4aa0-8e61-65d7e5effecf',
-        film: null as any,
+        film: null as Film | null,
       },
       {
         id: '9647fcf2-d0fa-4e69-ad90-2b23cff15449',
