@@ -1,5 +1,9 @@
 # FILM!
 
+**Автор:** Анна Пикова  
+**Курс:** Фулстек Разработчик  
+**Когорта:** 31
+
 ## Установка
 
 ### MongoDB
@@ -57,17 +61,25 @@ docker compose down
 - Email: `admin@example.com` (или значение из переменной `PGADMIN_EMAIL` в `.env`)
 - Password: `admin` (или значение из переменной `PGADMIN_PASSWORD` в `.env`)
 
-Добавьте подключение к базе данных:
-- **Host:** `postgres` (название сервиса в docker-compose)
-- **Port:** `5432`
-- **Database:** `film_db` (или значение из переменной `POSTGRES_DB`/`DATABASE_NAME`)
-- **Username:** `postgres` (или значение из переменной `POSTGRES_USER`/`DATABASE_USERNAME`)
-- **Password:** `password` (или значение из переменной `POSTGRES_PASSWORD`/`DATABASE_PASSWORD`)
+Добавьте подключение к базе данных в pgAdmin:
 
-**Важно:** Креденшалы для подключения к PostgreSQL должны совпадать с переменными в `.env`:
-- `POSTGRES_USER` = `DATABASE_USERNAME` (используется в pgAdmin как Username)
-- `POSTGRES_PASSWORD` = `DATABASE_PASSWORD` (используется в pgAdmin как Password)
-- `POSTGRES_DB` = `DATABASE_NAME` (используется в pgAdmin как Database)
+**Вкладка "General":**
+- **Name:** `Film Database` (любое удобное имя)
+- **Host name/address:** `postgres` (⚠️ важно: это название сервиса в docker-compose, НЕ IP адрес!)
+- **Port:** `5432`
+- **Maintenance database:** `postgres` (или значение из `POSTGRES_DB`)
+- **Username:** `postgres` (⚠️ должно совпадать с `POSTGRES_USER` из `.env`, обычно `postgres`, НЕ `films`!)
+- **Password:** `password` (⚠️ должно совпадать с `POSTGRES_PASSWORD` из `.env`)
+
+**Важно:** Креденшалы для подключения к PostgreSQL должны **точно совпадать** с переменными в `.env`:
+- `POSTGRES_USER` = `DATABASE_USERNAME` = **Username в pgAdmin** (обычно `postgres`)
+- `POSTGRES_PASSWORD` = `DATABASE_PASSWORD` = **Password в pgAdmin**
+- `POSTGRES_DB` = `DATABASE_NAME` = **Database в pgAdmin** 
+
+**Если у вас ошибка аутентификации:**
+1. Проверьте, что в `.env` файле `POSTGRES_USER=postgres` (а не `films` или другое значение)
+2. Убедитесь, что в pgAdmin используется то же значение, что и в `POSTGRES_USER`
+3. Проверьте, что пароль совпадает с `POSTGRES_PASSWORD` в `.env`
 
 Выполните SQL скрипты из `backend/test/` в следующем порядке:
 1. `prac.init.sql` - создание таблиц
@@ -115,7 +127,7 @@ npm run test:cov
 
 1. Подключитесь к серверу по SSH:
 ```bash
-ssh -i ~/Desktop/yandex-key annpikova@84.201.139.161
+ssh -i ~/Desktop/yandex-key annpikova@filmproject.annpikova.nomorepartiessbs.ru
 ```
 
 2. Установите Docker и Docker Compose (если еще не установлены):
@@ -143,9 +155,9 @@ docker compose -f docker-compose.prod.yml up -d
 docker compose -f docker-compose.prod.yml ps
 ```
 
-6. Инициализируйте базу данных через pgAdmin (http://84.201.139.161:8080) или через SSH туннель:
+6. Инициализируйте базу данных через pgAdmin (http://filmproject.annpikova.nomorepartiessbs.ru:8080) или через SSH туннель:
 ```bash
-ssh -i ~/Desktop/yandex-key -L 8080:localhost:8080 annpikova@84.201.139.161
+ssh -i ~/Desktop/yandex-key -L 8080:localhost:8080 annpikova@filmproject.annpikova.nomorepartiessbs.ru
 ```
 
 7. После заполнения базы данных можно закрыть порт 8080 через firewall:
@@ -164,9 +176,9 @@ docker compose -f docker-compose.prod.yml up -d
 
 ## Ссылки
 
-- [Задеплоенное приложение](http://84.201.139.161)
-- [API документация](http://84.201.139.161/api/afisha/films)
-- pgAdmin: http://84.201.139.161:8080
+- [Задеплоенное приложение](http://filmproject.annpikova.nomorepartiessbs.ru)
+- [API документация](http://filmproject.annpikova.nomorepartiessbs.ru/api/afisha/films)
+- pgAdmin: http://filmproject.annpikova.nomorepartiessbs.ru:8080
 
 
 
