@@ -2,18 +2,16 @@ import { Controller, Get, Param, NotFoundException } from '@nestjs/common';
 import { FilmsService } from '../services/films.service';
 import { FilmResponseDto, ScheduleResponseDto } from '../dto/films.dto';
 
-@Controller('api/afisha')
+@Controller('films')
 export class FilmsController {
   constructor(private readonly filmsService: FilmsService) {}
 
-  @Get('films')
-  @Get('films/')
+  @Get()
   async findAll(): Promise<{ total: number; items: FilmResponseDto[] }> {
     return this.filmsService.findAll();
   }
 
-  @Get('films/:id/schedule')
-  @Get('films/:id/schedule/')
+  @Get(':id/schedule')
   async findByIdWithSchedules(
     @Param('id') id: string,
   ): Promise<{ total: number; items: ScheduleResponseDto[] }> {

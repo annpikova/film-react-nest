@@ -4,7 +4,7 @@ import 'dotenv/config';
 import { DevLogger } from './logger/dev.logger';
 import { JsonLogger } from './logger/json.logger';
 import { TskvLogger } from './logger/tskv.logger';
-import { LoggerService } from '@nestjs/common';
+import { LoggerService, RequestMethod } from '@nestjs/common';
 
 function getLogger(): LoggerService {
   const loggerType = process.env.LOGGER_TYPE || 'dev';
@@ -24,7 +24,9 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     bufferLogs: true,
   });
-  // Не устанавливаем глобальный префикс, так как контроллеры уже имеют префикс 'api/afisha'
+  app.setGlobalPrefix('api/afisha', {
+    exclude: [{ path: 'content/(.*)', method: RequestMethod.ALL }],
+  });
   app.enableCors();
   app.useLogger(getLogger());
   await app.listen(3000);

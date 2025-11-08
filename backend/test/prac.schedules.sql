@@ -1,7 +1,7 @@
 -- Заполнение таблицы schedules тестовыми данными
 -- Выполнять после заполнения таблицы films
 
-INSERT INTO schedules (id, "daytime", hall, rows, seats, price, taken, "filmId") VALUES
+INSERT INTO schedules (id, daytime, hall, rows, seats, price, taken, film_id) VALUES
 -- Архитекторы общества (0e33c7f6-27a7-4aa0-8e61-65d7e5effecf)
 ('f2e429b0-685d-41f8-a8cd-1d8cb63b99ce', '2024-06-28T10:00:53+03:00', 0, 5, 10, 350, '', '0e33c7f6-27a7-4aa0-8e61-65d7e5effecf'),
 ('5beec101-acbb-4158-adc6-d855716b44a8', '2024-06-28T14:00:53+03:00', 1, 5, 10, 350, '', '0e33c7f6-27a7-4aa0-8e61-65d7e5effecf'),
