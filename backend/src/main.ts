@@ -25,7 +25,10 @@ async function bootstrap() {
     bufferLogs: true,
   });
   app.setGlobalPrefix('api/afisha', {
-    exclude: [{ path: 'content/(.*)', method: RequestMethod.ALL }],
+    exclude: [
+      { path: 'content/afisha', method: RequestMethod.ALL },
+      { path: 'content/afisha/(.*)', method: RequestMethod.ALL },
+    ],
   });
   app.enableCors();
   app.useLogger(getLogger());
