@@ -27,8 +27,10 @@ export class StaticController {
       filename = 'bg1s.jpg';
     }
 
-    const filePath = path.join(
-      process.cwd(), // при запуске pnpm start:dev это будет backend/
+    const filePath = path.resolve(
+      __dirname,
+      '..',
+      '..',
       'public',
       'content',
       'afisha',
