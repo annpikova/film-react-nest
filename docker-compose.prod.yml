@@ -64,6 +64,7 @@ services:
       - "3000:3000"   # можно убрать наружу, если доступ только через nginx
     volumes:
       - ./backend/public:/app/public
+      - ./backend/dist:/app/dist
     depends_on:
       postgres:
         condition: service_healthy
